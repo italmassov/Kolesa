@@ -2,7 +2,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <title>Узнай цену автомобиля</title>
-  <script type="text/javascript">
+  <script type="text/javascript"> 
   //create ajax request
   if (window.XMLHttpRequest)
   {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -118,19 +118,22 @@ else
 		for (i=0;i<yearsList.data.length;i++)
 		{
 			var optn = document.createElement("OPTION");
-			optn.text = yearsList.data[i].carYear;
+			optn.text = yearsList.data[i].carYear + " - " + yearsList.data[i].median + "$";
 			optn.value = i+1;  // You can change this to subcategory 
 			document.carForm.carYear.options.add(optn);
-		}
-		
+		}		
 	}
 	
     function yearChoice(){
 		//set value of year		
 		yearList = document.getElementById("carYear");
-		yearSelect = yearList.options[yearList.selectedIndex].text;		
-		document.getElementById("carYearSelId").value = yearSelect;
+		yearSelect = yearList.options[yearList.selectedIndex].text;
+		document.getElementById("carYearSelId").value = yearSelect.substring(0,4);
 		}
+		
+	window.onload = function(){
+		regionChoice();
+	}
 	
   </script>
 <head>

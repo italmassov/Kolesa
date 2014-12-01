@@ -22,7 +22,7 @@
     $sel_Make = $_REQUEST["carMake"]; 
     $sel_Model = $_REQUEST["carModel"]; 	
 	
-	$carModels_query = "SELECT distinct carYear from carPrices where region='{$sel_Region}' and  carMake='{$sel_Make}' and carModel='{$sel_Model}' order by carYear";
+	$carModels_query = "SELECT carYear, ROUND(AVG(median)) as median from carPrices where region='{$sel_Region}' and  carMake='{$sel_Make}' and carModel='{$sel_Model}' group by carYear order by carYear";
 	$row = $dbo->prepare($carModels_query);
 	$row->execute();	
 	$result = $row->fetchAll(PDO::FETCH_ASSOC);

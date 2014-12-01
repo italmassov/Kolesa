@@ -1,4 +1,12 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title></title>
+</head>
+<body>
+<!--[if lt IE 9]><script src="js/excanvas.js"></script><![endif]-->
+<script src="js/flotr2.min.js"></script>
 <?php
 	//File for ajax extracting categories
 	//header('Content-Type: text/html; charset=utf-8');       
@@ -27,7 +35,7 @@
 	echo "<h2>Цена {$sel_Model} в {$sel_region} {$sel_Year} года </h2><br/>";
 	echo "<a href='carPriceTest3.php'>Вернуться на главную</a><br/>";
 	
-	$carModels_query = "SELECT * from carPrices where carMake='{$sel_Make}' and carModel='{$sel_Model}' and region='{$sel_region}' and carYear={$sel_Year} and carCondition!='' and customerState!='' and engineType!='' and engineVol!='' and steeringWheel!='' and transmission!='' order by median";
+	$carModels_query = "SELECT * from carPrices where carMake='{$sel_Make}' and carModel='{$sel_Model}' and region='{$sel_region}' and carYear={$sel_Year} and carCondition!='' and customerState!='' and engineType!='' and engineVol!='' and steeringWheel!='' and transmission!='' and mileage>0 order by median";
 	
 	//echo $carModels_query;
 	
@@ -61,5 +69,62 @@
 				echo "<td>{$result['quant75']}</td>";				
 			echo '</tr>';		
 		}	
-	echo '</table>';	
+	echo "</table>\n";
+	
+	//setting up data
+	$carModels_query = "SELECT * from carPrices where carMake='{$sel_Make}' and carModel='{$sel_Model}' and region='{$sel_region}' and carYear={$sel_Year} and carCondition!='' and customerState!='' and engineType!='' and engineVol!='' and steeringWheel!='' and transmission!='' and mileage>0 order by mileage";
+	$row = $dbo->prepare($carModels_query);
+	$row->execute();
+	$num_rows = $row->rowCount();
+	//echo "number of rows: {$num_rows}\n";
+	echo "<script>\n";
+	echo "var prices = [ [\n";
+		$i = 0;
+		while($result = $row->fetch(PDO::FETCH_ASSOC)){
+			$i = $i+1;
+			echo "[{$result['mileage']},{$result['median']}]";
+			if($i<$num_rows)
+				echo ", ";
+		}		
+	echo "] ];\n";
+	
+	$row->execute();
+	echo "var mileages = [";
+		$i = 0;
+		while($result = $row->fetch(PDO::FETCH_ASSOC)){
+			$i = $i+1;
+			echo "{$result['mileage']}";
+			if($i<$num_rows)
+				echo ", ";
+		}
+	echo "];\n";
+	echo "var chartTitle = 'Цена на {$sel_Model} {$sel_Year} года в {$sel_region} в зависимости от пробега';\n";
 ?>
+
+window.onload = function(){
+	Flotr.draw(
+		document.getElementById("chart"), prices,{
+			title: chartTitle,
+			bars: {
+				show: true,
+				shadowSize: 0,
+				fillOpacity: 1
+			},
+			xaxis: {
+				min:0,
+				tickDecimals:0
+			},			
+			yaxis: {
+				min:-1000,
+				tickDecimals:0
+			},
+			grid: {
+				horizontalLines: false,
+				verticalLines: false
+			}
+		});
+};
+</script>
+<div id='chart' style="width:600px;height:300px;"></div>
+</body>
+</html>
