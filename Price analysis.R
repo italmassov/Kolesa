@@ -1,42 +1,5 @@
 Sys.setlocale(, "russian")
 # analysis of fair price
-# step 1 - extract data about price with longest period in each file and merge
-file1 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_24.csv", stringsAsFactors = F)
-for(i in 1:length(file1[1,])){
-  file1[,i] = iconv(file1[,i], from = "utf-8", "windows-1251")  
-}
-head(file1)
-
-file2 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_25.csv", stringsAsFactors = F)
-for(i in 1:length(file2[1,])){
-  file2[,i] = iconv(file2[,i], from = "utf-8", "windows-1251")  
-}
-head(file2)
-
-file3 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_26.csv", stringsAsFactors = F)
-for(i in 1:length(file3[1,])){
-  file3[,i] = iconv(file3[,i], from = "utf-8", "windows-1251")  
-}
-head(file3)
-
-file4 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_27.csv", stringsAsFactors = F)
-for(i in 1:length(file4[1,])){
-  file4[,i] = iconv(file4[,i], from = "utf-8", "windows-1251")  
-}
-head(file4)
-
-file5 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_28.csv", stringsAsFactors = F)
-for(i in 1:length(file5[1,])){
-  file5[,i] = iconv(file5[,i], from = "utf-8", "windows-1251")  
-}
-head(file5)
-
-file6 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_29.csv", stringsAsFactors = F)
-for(i in 1:length(file6[1,])){
-  file6[,i] = iconv(file6[,i], from = "utf-8", "windows-1251")  
-}
-head(file6)
-
 
 file1 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_24.csv", stringsAsFactors = F, nrows=3*10^5)
 file2 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_25.csv", stringsAsFactors = F, nrows=3*10^5)
@@ -53,11 +16,11 @@ write.csv(aggreg.file, "C:/Users/kuanysh/Documents/Scrapy/kolesa/aggreg.file.csv
 aggreg.file = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/aggreg.file.csv")
 
 # descriptive statistic on number of days up
-#require(dplyr)
+require(dplyr)
 #head(aggreg.file)
 #colnames(aggreg.file)
-#links = summarize(group_by(aggreg.file, AdLink, AdPhone), days=length(crawlDateTime), 
-#                  totalViews = sum(AdViews))
+links = summarize(group_by(aggreg.file, AdLink, AdPhone), days=length(crawlDateTime), 
+                  totalViews = sum(AdViews))
 
 # check for repeating Ad link with different number
 #links.stat =  summarize(group_by(links, AdLink), count=length(AdPhone))
@@ -68,6 +31,12 @@ aggreg.file = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/aggreg.file.csv
 #SUMMARY: so we asssume that AdLink is unique identifier of the ad
 
 #Check if number of views correspond with days on site
+plot(links$days, links$totalViews) 
+
+# total number of views is not characteristic for some ads that stood long
+# instead get ads that grow fastest in viewership
+aggreg.file = mutate(aggreg.file, 
+             prev.crawl=min(aggreg.file[which(aggreg.file$AdLink==AdLink & aggreg.file$crawlDateTime<crawlDateTime), ]))
 
 ###############################################
 # Model build attempts
