@@ -1,40 +1,34 @@
 Sys.setlocale(,"russian")
 
-file1 = read.table("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_24_cor.csv", stringsAsFactors = F, sep=",", dec=".", header = T, encoding = "UTF-8")
-file1 = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_24_cor.csv", stringsAsFactors = F)
-#file1 = read.table("C:/Users/kuanysh/Documents/Scrapy/kolesa/data_11_22.csv", stringsAsFactors = F, sep=",", dec=".", header = T, encoding = "utf-8")
+path.to.data = "C:/Users/kuanysh/Documents/Scrapy/kolesa/last week data - put copies"
+last.week.data = list.files(path = path.to.data, pattern = "*.csv",full.names = T)
 
-head(file1)
+for(i in 1:length(last.week.data)){
+  #i = 1
+  cur.file = read.csv(last.week.data[i])
+  #head(cur.file)
+  
+  if(i==1){
+    total.files = cur.file
+  }else
+    total.files = rbind(total.files, cur.file)
+}
+rm(cur.file)
 
-#file1$region = enc2utf8(x = file1$region)
+#save aggregated results
+write.csv(total.files, "C:/Users/kuanysh/Documents/Scrapy/kolesa/current data model/aggregated.week.csv", row.names=F)
+total.files = read.csv("C:/Users/kuanysh/Documents/Scrapy/kolesa/current data model/aggregated.week.csv")
 
-#table(file1$carMake)
-
-#total.file = rbind(file1)
-#levels(file1$region)
-#write.csv(total.file, "C:/Users/kuanysh/Documents/Scrapy/kolesa/total_data.csv", row.names=F)
-#test_file = file1[1:100,]
-#write.csv(test_file, "C:/Users/kuanysh/Documents/Scrapy/kolesa/test_file.csv", row.names=F)
-
-# create aggregation file
+# create ad level aggregation data
 require(dplyr)
-total.file = group_by(file1, carMake, carModel, carYear, condition, customsState, 
-                      engineType, engineVol, gearType, region, steeringWheel, 
-                      transmission, mileage)
-total.file.aggr =  summarise(total.file, median = median(SellingPrice), 
-                             quant25 = quantile(SellingPrice, 0.25), 
-                             quant75 = quantile(SellingPrice, 0.75))
+week.long.ads = summarise(group_by(total.files, AdLink, carMake, carModel, 
+                      carYear, condition, customsState, 
+                      engineType, engineVol, gearType, 
+                      region, steeringWheel, 
+                      transmission, mileage), AggrPrice = mean(SellingPrice, na.rm=T))
+head(week.long.ads)
+colnames(week.long.ads)[5] = "carCondition"
+summary(week.long.ads)
 
-colnames(total.file.aggr)[4] = "carCondition"
-colnames(total.file.aggr)
-
-write.csv(total.file.aggr, "C:/Users/kuanysh/Documents/Scrapy/kolesa/carsAggregate.csv",
-          row.names=F, fileEncoding="utf-8")
-
-# check specific errors
-str(total.file$engineVol)
-
-levels(total.file$engineVol)
-
-spec = subset(total.file, carMake=='Универсалы')
-spec$AdLink
+write.csv(week.long.ads, "C:/Users/kuanysh/Documents/Scrapy/kolesa/current data model/week.long.ads.csv",
+          row.names=F)
