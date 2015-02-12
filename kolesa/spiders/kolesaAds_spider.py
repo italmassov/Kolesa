@@ -29,19 +29,14 @@ class KolesaSpider(scrapy.Spider):
 
     # select region and make of the car
     def parse(self, response):
-        # extracting list of regions
-        #req = urllib2.Request("http://kolesa.kz/ajax/load-regions")
-        #resp = urllib2.urlopen(req)
-        #print(resp)
-        #if resp.getcode != 404:
-        #    regList = json.loads(resp)
+        #open_in_browser(response)
 
         # testing specific pages descripton
         #item =  KolesaItem()
         #yield Request("http://kolesa.kz/a/show/12773955", callback = self.parseDescription, meta={'item':item})
 
+        regList = response.xpath('//ul[@class="region-popular-list"]/li[@class="region-item"][1]')
 
-        regList = response.xpath('//ul[@class="region-popular-list"]/li[@class="region-item"]')
         for region in regList:
             item = KolesaItem()
             cur_region = ''.join(region.xpath('span[@class="inactive region-city-item"]/text()').extract())
@@ -56,6 +51,7 @@ class KolesaSpider(scrapy.Spider):
 
     def parse2(self, response):
         #open_in_browser(response)
+
         # поддержанные авто
         yield Request("http://kolesa.kz/cars/", callback = self.parse3)
 
@@ -71,10 +67,12 @@ class KolesaSpider(scrapy.Spider):
     def parse4(self, response):
         # go through models of the make
         #open_in_browser(response)
+
         # starting crawling
-        Ads = response.xpath('//div[@class="header-search"]')
+        Ads = response.xpath('//div[@class="header-search"][1]')
         for Ad in Ads:
-            link = ''.join(Ad.xpath('a[@class="fn"]/@href').extract())
+            link = ''.join(Ad.xpath('a[@class="mm"]/@href').extract())
+            link = urlparse.urljoin(response.url, link .strip())
 
             item =  KolesaItem()
             item['crawlDateTime'] = time.time()
@@ -98,8 +96,8 @@ class KolesaSpider(scrapy.Spider):
 
     def parseDescription(self, response):
         #open_in_browser(response)
-        item = response.meta['item']
 
+        item = response.meta['item']
         item['region'] = ''.join(response.xpath("//dt[text()='%s']/following::dd[1]/text()" % u"Регион").extract())
 
         bodyType= ''.join(response.xpath("//dt[text()='%s']/following::dd[1]/text()" % u"Кузов").extract())
